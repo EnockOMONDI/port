@@ -1,8 +1,10 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Briefcase } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Briefcase, ChevronDown, ChevronUp } from 'lucide-react';
 
 const Experience = () => {
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
   const experiences = [
     {
       title: 'Creative and Tech Officer',
@@ -42,63 +44,108 @@ const Experience = () => {
     },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
   return (
-    <div className="pt-16">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 pt-16">
       <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-16"
+            transition={{ duration: 0.6 }}
+            className="text-center mb-20"
           >
-            <h1 className="text-4xl font-bold text-gray-900">Professional Experience</h1>
-            <p className="mt-4 text-xl text-gray-600">
-              A journey through my professional career and achievements
-            </p>
+            <h1 className="text-5xl font-bold text-gray-900 mb-4">Experience</h1>
+            <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
           </motion.div>
 
-          <div className="relative">
-            <div className="absolute left-1/2 transform -translate-x-px h-full w-0.5 bg-gray-200"></div>
-
-            <div className="space-y-12">
-              {experiences.map((experience, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.2 }}
-                  className={`relative ${index % 2 === 0 ? 'md:pr-8 md:text-right' : 'md:pl-8'} md:w-1/2 ${
-                    index % 2 === 0 ? 'md:ml-0 md:mr-auto' : 'md:ml-auto md:mr-0'
-                  }`}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-8"
+          >
+            {experiences.map((experience, index) => (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                className="relative"
+              >
+                <div 
+                  className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
+                  onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
                 >
-                  <div className="bg-white rounded-lg p-8 shadow-lg hover:shadow-xl transition-shadow duration-200">
-                    <div className="absolute top-8 -mt-1 w-6 h-6 rounded-full bg-blue-600 border-4 border-white shadow">
-                      <Briefcase className="w-4 h-4 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <Briefcase className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-semibold text-gray-900">{experience.title}</h3>
+                          <p className="text-blue-600">{experience.company}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-500 mb-2">{experience.period}</p>
                     </div>
-
-                    <span className="inline-block px-4 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-semibold mb-4">
-                      {experience.period}
-                    </span>
-
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">{experience.title}</h3>
-                    <h4 className="text-lg text-blue-600 mb-4">{experience.company}</h4>
-                    
-                    <p className="text-gray-600 mb-4">{experience.description}</p>
-
-                    <div className="space-y-2">
-                      {experience.responsibilities.map((responsibility, respIndex) => (
-                        <p key={respIndex} className="text-gray-600 flex items-center">
-                          <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
-                          {responsibility}
-                        </p>
-                      ))}
-                    </div>
+                    <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                      {expandedIndex === index ? <ChevronUp /> : <ChevronDown />}
+                    </button>
                   </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+
+                  <AnimatePresence>
+                    {expandedIndex === index && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pt-4 border-t border-gray-100">
+                          <p className="text-gray-600 mb-4">{experience.description}</p>
+                          <div className="space-y-2">
+                            {experience.responsibilities.map((responsibility, respIndex) => (
+                              <motion.p
+                                key={respIndex}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: respIndex * 0.1 }}
+                                className="text-gray-600 flex items-center gap-2"
+                              >
+                                <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                                {responsibility}
+                              </motion.p>
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
     </div>
